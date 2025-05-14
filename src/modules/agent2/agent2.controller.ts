@@ -10,6 +10,11 @@ export class Agent2Controller {
     const agent = await this.agent2Service.initializeAcmeAgent();
     return {
       message: 'Acme agent initialized',
+      agent: {
+        label: agent.config.label,
+        walletId: agent.config?.walletConfig?.id,
+        endpoints: agent.config.endpoints,
+      },
     };
   }
 }

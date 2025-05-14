@@ -8,12 +8,12 @@ import {
   WsOutboundTransport,
 } from '@credo-ts/core';
 import { agentDependencies, HttpInboundTransport } from '@credo-ts/node';
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { ariesAskar } from '@hyperledger/aries-askar-nodejs';
 
 @Injectable()
 export class Agent2Service {
-  public acmeAgent: Agent;
+  public agent: Agent<any> | null = null;
   async initializeAcmeAgent() {
     try {
       const config: InitConfig = {
@@ -41,15 +41,23 @@ export class Agent2Service {
 
       await agent.initialize();
       console.log(`${config.label} is initialized`);
-      this.acmeAgent = agent;
-      console.log(await this.acmeAgent.oob.createInvitation())
+      // console.log(await this.acmeAgent.oob.createInvitation())
+      this.setAgent(agent);
+      return agent;
     } catch (error) {
       console.error('Error initializing Acme agent:', error);
       throw error;
     }
   }
-
-  public async getAgent(): Promise<Agent> {
-    return await this.acmeAgent;
+  private setAgent(agent: Agent) {
+    this.agent = agent;
+  }
+  public getAgent(): Agent {
+    if (!this.agent) {
+      throw new BadRequestException(
+        'Acme agent not initialized. Please initialise first.',
+      );
+    }
+    return this.agent;
   }
 }

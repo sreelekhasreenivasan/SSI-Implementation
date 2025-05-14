@@ -8,6 +8,13 @@ export class Agent1Controller {
   @Get('bob')
   async initializeBobAgent() {
     const agent = await this.agent1Service.initializeBobAgent();
-    return { message: 'Bob agent initialized', agentLabel: agent.config.label };
+    return {
+      message: 'Bob agent initialized',
+      agent: {
+        label: agent.config.label,
+        walletId: agent.config?.walletConfig?.id,
+        endpoints: agent.config.endpoints,
+      },
+    };
   }
 }

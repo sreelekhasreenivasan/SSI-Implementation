@@ -12,8 +12,8 @@ export class ConnectionService {
 
   async createInvitation() {
     try {
-      const agent = await this.acmeService.getAgent();
-      console.log(agent)
+      const agent = this.acmeService.getAgent();
+      console.log(agent);
       const outOfBandRecord = await agent.oob.createInvitation();
       return {
         invitationUrl: outOfBandRecord.outOfBandInvitation.toUrl({
@@ -29,10 +29,9 @@ export class ConnectionService {
   }
   async receiveInvitation(invitationUrl: string) {
     try {
-      // const bobAgent = this.bobService.getAgent();
+      const agent = this.bobService.getAgent();
       const invitation = OutOfBandInvitation.fromUrl(invitationUrl);
-      const { outOfBandRecord } =
-        await this.bobService.bobAgent.oob.receiveInvitation(invitation);
+      const { outOfBandRecord } = await agent.oob.receiveInvitation(invitation);
       return outOfBandRecord;
     } catch (error) {
       console.error('Error receiving invitation:', error);

@@ -112,7 +112,7 @@ export class CredentialService {
           presentationExchange: {
             definition: {
               id: '9ed05140-b33b-445e-a0f0-9a23aa501868',
-              namg: 'Student Verification',
+              name: 'Student Verification',
               purpose:
                 'We need to verify your Student ID card for scholarship ',
               input_descriptors: [

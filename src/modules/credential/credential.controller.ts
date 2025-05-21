@@ -29,7 +29,8 @@ export class CredentialController {
     const result = await this.credentialService.issuingCredential(data);
     return result;
   }
-  @Get()
+
+  @Get('Accept the credential')
   @ApiOperation({ summary: 'Accepting the offer by Bob agent as holder.' })
   @ApiResponse({
     status: 200,
@@ -45,6 +46,25 @@ export class CredentialController {
   })
   async getCredential() {
     const result = await this.credentialService.acceptCredential();
+    return result;
+  }
+
+  @Get('Verify the credential')
+  @ApiOperation({ summary: 'Verify the credential by Acme agent as verifier.' })
+  @ApiResponse({
+    status: 200,
+    description: 'Verified the credential successfully.',
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Acme agent is not initialized.',
+  })
+  @ApiResponse({
+    status: 500,
+    description: 'Internal serve error while initializing.',
+  })
+  async verifyCredential() {
+    const result = await this.credentialService.verifingCredential();
     return result;
   }
 }

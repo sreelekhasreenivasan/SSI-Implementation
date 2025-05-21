@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/await-thenable */
 import { AskarModule } from '@credo-ts/askar';
 import {
   Agent,
@@ -27,11 +26,6 @@ import {
 } from '@credo-ts/indy-vdr';
 import { indyVdr } from '@hyperledger/indy-vdr-nodejs';
 import { genesisTransaction } from 'src/utils/genesis_transaction';
-import {
-  CredentialEventTypes,
-  CredentialStateChangedEvent,
-  CredentialState,
-} from '@credo-ts/core';
 
 @Injectable()
 export class BobService {
@@ -109,26 +103,5 @@ export class BobService {
       );
     }
     return this.agent;
-  }
-
-  async acceptCredential() {
-    const agent = await this.getAgent();
-    agent.events.on<CredentialStateChangedEvent>(
-      CredentialEventTypes.CredentialStateChanged,
-      async ({ payload }) => {
-        switch (payload.credentialRecord.state) {
-          case CredentialState.OfferReceived:
-            console.log('received a credential');
-            await agent.credentials.acceptOffer({
-              credentialRecordId: payload.credentialRecord.id,
-            });
-            break;
-          case CredentialState.Done:
-            console.log(
-              `Credential for credential id ${payload.credentialRecord.id} is accepted`,
-            );
-        }
-      },
-    );
   }
 }

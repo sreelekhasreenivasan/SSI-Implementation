@@ -32,7 +32,7 @@ import {
 } from '@credo-ts/indy-vdr';
 import { indyVdr } from '@hyperledger/indy-vdr-nodejs';
 import { genesisTransaction } from 'src/utils/genesis_transaction';
-// import { OpenId4VcVerifierModule } from '@credo-ts/openid4vc';
+import { OpenId4VcVerifierModule } from '@credo-ts/openid4vc';
 
 @Injectable()
 export class AcmeService {
@@ -90,9 +90,9 @@ export class AcmeService {
               }),
             ],
           }),
-          // openId4VcVerifier: new OpenId4VcVerifierModule({
-          //   baseUrl: 'http://localhost:3002',
-          // }),
+          openId4VcVerifier: new OpenId4VcVerifierModule({
+            baseUrl: 'http://localhost:3002',
+          }),
         },
       });
 

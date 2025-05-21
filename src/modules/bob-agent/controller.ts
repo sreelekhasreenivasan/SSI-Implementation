@@ -32,23 +32,4 @@ export class BobController {
       },
     };
   }
-
-  @Get()
-  @ApiOperation({ summary: 'Accepting the offer by Bob agent as holder.' })
-  @ApiResponse({
-    status: 200,
-    description: 'Accepted the offer successfully.',
-  })
-  @ApiResponse({
-    status: 404,
-    description: 'Bob agent is not initialized.',
-  })
-  @ApiResponse({
-    status: 500,
-    description: 'Internal serve error while initializing.',
-  })
-  async getCredential() {
-    const result = await this.bobService.acceptCredential();
-    return result;
-  }
 }

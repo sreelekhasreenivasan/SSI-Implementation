@@ -1,12 +1,13 @@
 import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { Agent1Module } from './modules/agent1/agent1.module';
-import { Agent2Module } from './modules/agent2/agent2.module';
-import { ConnectionModule } from './modules/connection/connection.module';
+import { ConnectionModule } from './modules/connection/module';
+import { CredentialsModule } from './modules/credentials/module';
+import { AcmeModule } from './modules/acme-agent/module';
+import { BobModule } from './modules/bob-agent/module';
 
 @Module({
-  imports: [Agent1Module, Agent2Module, ConnectionModule],
+  imports: [AcmeModule, BobModule, ConnectionModule, CredentialsModule],
   controllers: [AppController],
   providers: [AppService],
 })

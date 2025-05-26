@@ -60,7 +60,30 @@ export class ConnectionController {
     description: 'Internal serve error while initializing.',
   })
   async getAcmeConnectionId(@Query('id') id: string) {
-    const result = await this.connectionService.getConnectionId(id);
+    const result = await this.connectionService.getConnectionIdofAcme(id);
+    return result;
+  }
+
+  @Get('bob-connectionId')
+  @ApiOperation({ summary: 'Get connection details by ID.' })
+  @ApiResponse({
+    status: 200,
+    description: 'Connection ID for Bob agent returned.',
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Bob agent is not initialized.',
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'No connection found for the given out-of-band ID.',
+  })
+  @ApiResponse({
+    status: 500,
+    description: 'Internal serve error while initializing.',
+  })
+  async BobConnectionId(@Query('id') id: string) {
+    const result = await this.connectionService.getConnectionIdofBob(id);
     return result;
   }
 }

@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsNotEmpty, IsUrl } from 'class-validator';
+import { IsNotEmpty, IsString, IsUrl } from 'class-validator';
 
 export class getUrlDto {
   @ApiProperty({
@@ -9,4 +9,10 @@ export class getUrlDto {
   @IsUrl()
   @IsNotEmpty()
   invitationUrl: string;
+}
+
+export class oobIdDto {
+  @IsString()
+  @IsNotEmpty()
+  oobId: string;
 }

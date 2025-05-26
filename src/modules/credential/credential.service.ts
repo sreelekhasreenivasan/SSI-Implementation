@@ -8,19 +8,20 @@ import {
   InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
-import { offerCredDto } from '../ledger/dto/ledger.dto';
-import { AcmeService } from '../acme-agent/service';
 import {
   OpenId4VcVerificationSessionState,
   OpenId4VcVerificationSessionStateChangedEvent,
   OpenId4VcVerifierEvents,
 } from '@credo-ts/openid4vc';
-import {
-  CredentialEventTypes,
-  CredentialStateChangedEvent,
-  CredentialState,
-} from '@credo-ts/core';
+// import {
+//   CredentialEventTypes,
+//   CredentialStateChangedEvent,
+//   CredentialState,
+// } from '@credo-ts/core';
+import { CredentialState } from '@credo-ts/core';
+import { AcmeService } from '../acme-agent/service';
 import { BobService } from '../bob-agent/service';
+import { offerCredDto } from '../ledger/dto/ledger.dto';
 
 @Injectable()
 export class CredentialService {
@@ -29,8 +30,8 @@ export class CredentialService {
     private readonly bobService: BobService,
   ) {}
 
-  //Issuing credential
-  async issuingCredential(data: offerCredDto): Promise<unknown> {
+  //offer credential
+  async OfferCredential(data: offerCredDto): Promise<unknown> {
     try {
       const agent = this.acmeService.getAgent();
 
@@ -46,11 +47,11 @@ export class CredentialService {
           },
         });
       if (!indyCredentialExchangeRecord) {
-        throw new BadRequestException('Error in issuing credential');
+        throw new BadRequestException('Error in offering credential');
       }
       return {
         statusCode: HttpStatus.OK,
-        message: 'Credential issued successfully',
+        message: 'Credential offered successfully',
         data: indyCredentialExchangeRecord,
       };
     } catch (error) {
@@ -65,38 +66,113 @@ export class CredentialService {
   }
 
   //holder accept the credential
-  async acceptCredential() {
+  // async acceptCredential(connectionId: string): Promise<unknown> {
+  //   try {
+  //     const holder = this.bobService.getAgent();
+  //     const offerReceived = await holder.credentials.findAllByQuery({
+  //       connectionId,
+  //       state: CredentialState.OfferReceived,
+  //     });
+  //     if (!offerReceived || offerReceived.length === 0) {
+  //       throw new NotFoundException('No offer received');
+  //     }
+  //     const acceptCredential = holder.credentials.acceptOffer({
+  //       credentialRecordId: offerReceived[0].id,
+  //     });
+  //     return acceptCredential;
+  //   } catch (error) {
+  //     if (error instanceof NotFoundException) {
+  //       throw error;
+  //     }
+  //     throw new InternalServerErrorException('Error in accepting the offer');
+  //   }
+  // }
+
+  async acceptCredential(connectionId: string): Promise<unknown> {
     try {
       const agent = this.bobService.getAgent();
-      agent.events.on<CredentialStateChangedEvent>(
-        CredentialEventTypes.CredentialStateChanged,
-        async ({ payload }) => {
-          switch (payload.credentialRecord.state) {
-            case CredentialState.OfferReceived:
-              console.log('received a credential');
-              await agent.credentials.acceptOffer({
-                credentialRecordId: payload.credentialRecord.id,
-              });
-              break;
-            case CredentialState.Done:
-              console.log(
-                `Credential for credential id ${payload.credentialRecord.id} is accepted`,
-              );
-          }
-        },
+
+      if (!connectionId) {
+        throw new NotFoundException('connectionId is required');
+      }
+
+      const credentials = await agent.credentials.findAllByQuery({
+        connectionId,
+      });
+
+      const offerCredential = credentials.find(
+        (cred) => cred.state === CredentialState.OfferReceived,
       );
-      const credentials = await agent.credentials.getAll();
-      console.log(credentials);
+
+      if (!offerCredential) {
+        throw new NotFoundException(
+          `No credential offer found for connectionId: ${connectionId}`,
+        );
+      }
+
+      const accepted = await agent.credentials.acceptOffer({
+        credentialRecordId: offerCredential.id,
+      });
+
+      return {
+        message: 'Credential offer accepted successfully',
+        credentialId: accepted.id,
+      };
+    } catch (error) {
+      console.error('Error accepting credential:', error);
+      throw new InternalServerErrorException(
+        `Failed to accept credential: ${error.message}`,
+      );
+    }
+  }
+
+  async getCredentialOffers() {
+    const agent = this.acmeService.getAgent();
+    const offers = await agent.credentials.getAll();
+    return offers;
+  }
+
+  async getCredentialOffer() {
+    const agent = this.bobService.getAgent();
+    const offers = await agent.credentials.getAll();
+    console.log(
+      offers.map((c) => ({
+        id: c.id,
+        state: c.state,
+        connectionId: c.connectionId,
+      })),
+    );
+    return offers;
+  }
+
+  async getRecordofAcme(recordId: string): Promise<unknown> {
+    try {
+      const agent = this.acmeService.getAgent();
+      const offerRecord = await agent.credentials.getById(recordId);
+      return offerRecord;
     } catch (error) {
       if (error instanceof NotFoundException) {
         throw error;
       }
-      throw new InternalServerErrorException('Error in accepting the offer');
+      throw new InternalServerErrorException('Error in getting the record');
+    }
+  }
+
+  async getRecordofBob(recordId: string): Promise<unknown> {
+    try {
+      const agent = this.bobService.getAgent();
+      const offerRecord = await agent.credentials.getById(recordId);
+      return offerRecord;
+    } catch (error) {
+      if (error instanceof NotFoundException) {
+        throw error;
+      }
+      throw new InternalServerErrorException('Error in getting the record');
     }
   }
 
   //verifing credential
-  async verifingCredential() {
+  async verifingCredential(): Promise<unknown> {
     try {
       const verifier = this.acmeService.getAgent();
 

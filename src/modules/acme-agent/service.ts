@@ -1,38 +1,39 @@
-import { AskarModule } from '@credo-ts/askar';
-import {
-  Agent,
-  ConnectionsModule,
-  CredentialsModule,
-  DidsModule,
-  HttpOutboundTransport,
-  InitConfig,
-  OutOfBandModule,
-  V2CredentialProtocol,
-  WsOutboundTransport,
-} from '@credo-ts/core';
-import { agentDependencies, HttpInboundTransport } from '@credo-ts/node';
-import {
-  ConflictException,
-  HttpStatus,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
-import { ariesAskar } from '@hyperledger/aries-askar-nodejs';
-import { anoncreds } from '@hyperledger/anoncreds-nodejs';
 import {
   AnonCredsCredentialFormatService,
   AnonCredsModule,
   LegacyIndyCredentialFormatService,
 } from '@credo-ts/anoncreds';
+import { AskarModule } from '@credo-ts/askar';
+import {
+  Agent,
+  ConnectionsModule,
+  ConsoleLogger,
+  CredentialsModule,
+  DidsModule,
+  HttpOutboundTransport,
+  InitConfig,
+  LogLevel,
+  OutOfBandModule,
+  V2CredentialProtocol,
+  WsOutboundTransport,
+} from '@credo-ts/core';
 import {
   IndyVdrAnonCredsRegistry,
   IndyVdrIndyDidRegistrar,
   IndyVdrIndyDidResolver,
   IndyVdrModule,
 } from '@credo-ts/indy-vdr';
+import { agentDependencies, HttpInboundTransport } from '@credo-ts/node';
+import { anoncreds } from '@hyperledger/anoncreds-nodejs';
+import { ariesAskar } from '@hyperledger/aries-askar-nodejs';
 import { indyVdr } from '@hyperledger/indy-vdr-nodejs';
+import {
+  ConflictException,
+  HttpStatus,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { genesisTransaction } from 'src/utils/genesis_transaction';
-import { OpenId4VcVerifierModule } from '@credo-ts/openid4vc';
 
 @Injectable()
 export class AcmeService {
@@ -50,6 +51,7 @@ export class AcmeService {
           id: 'mainAcme',
           key: 'demoagentacme0000000000000000000',
         },
+        logger: new ConsoleLogger(LogLevel.debug),
         endpoints: ['http://localhost:3002'],
       };
 
@@ -90,9 +92,6 @@ export class AcmeService {
               }),
             ],
           }),
-          openId4VcVerifier: new OpenId4VcVerifierModule({
-            baseUrl: 'http://localhost:3002',
-          }),
         },
       });
 
@@ -105,7 +104,7 @@ export class AcmeService {
       this.setAgent(agent);
       return {
         statusCode: HttpStatus.OK,
-        message: 'User created successfully',
+        message: 'Acme agent initialized successfully',
         data: agent,
       };
     } catch (error) {

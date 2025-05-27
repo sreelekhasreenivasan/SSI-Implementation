@@ -24,13 +24,22 @@ export class LedgerService {
         agent,
         'indy',
         'bcovrin:testnet',
+<<<<<<< HEAD
         'DeXLx9W5uGeg1mbQCQjTEk',
         '3e7a4c8b1234e6d781c9a34b7f5e2c3a',
+=======
+        'KRC6EETtrGfJ4XfnLcagmd',
+        '8e7a4c8b1234e6d781c9a34b7f5e2c0z',
+>>>>>>> ab399cd7cac03d68e90e0f3cd0adb96f6d0cd739
       );
       const schemaResult = await agent.modules.anoncreds.registerSchema({
         schema: {
           attrNames: ['name', 'age', 'city', 'blood_group'],
+<<<<<<< HEAD
           issuerId: 'did:indy:bcovrin:testnet:DeXLx9W5uGeg1mbQCQjTEk',
+=======
+          issuerId: 'did:indy:bcovrin:testnet:KRC6EETtrGfJ4XfnLcagmd',
+>>>>>>> ab399cd7cac03d68e90e0f3cd0adb96f6d0cd739
           name: 'Student ID Card V1',
           version: '1.0.1',
         },

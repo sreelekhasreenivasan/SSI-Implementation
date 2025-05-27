@@ -2,10 +2,14 @@ import { AskarModule } from '@credo-ts/askar';
 import {
   Agent,
   ConnectionsModule,
+  ConsoleLogger,
+  CredentialsModule,
   DidsModule,
   HttpOutboundTransport,
   InitConfig,
+  LogLevel,
   OutOfBandModule,
+  V2CredentialProtocol,
   WsOutboundTransport,
 } from '@credo-ts/core';
 import { agentDependencies, HttpInboundTransport } from '@credo-ts/node';
@@ -17,7 +21,11 @@ import {
 } from '@nestjs/common';
 import { ariesAskar } from '@hyperledger/aries-askar-nodejs';
 import { anoncreds } from '@hyperledger/anoncreds-nodejs';
-import { AnonCredsModule } from '@credo-ts/anoncreds';
+import {
+  AnonCredsCredentialFormatService,
+  AnonCredsModule,
+  LegacyIndyCredentialFormatService,
+} from '@credo-ts/anoncreds';
 import {
   IndyVdrAnonCredsRegistry,
   IndyVdrIndyDidRegistrar,
@@ -43,6 +51,7 @@ export class BobService {
           id: 'mainBob',
           key: 'demoagentbob00000000000000000000',
         },
+        logger: new ConsoleLogger(LogLevel.debug),
         endpoints: ['http://localhost:3003'],
       };
 
@@ -71,6 +80,16 @@ export class BobService {
           askar: new AskarModule({ ariesAskar }),
           connections: new ConnectionsModule({ autoAcceptConnections: true }),
           oob: new OutOfBandModule(),
+          credentials: new CredentialsModule({
+            credentialProtocols: [
+              new V2CredentialProtocol({
+                credentialFormats: [
+                  new LegacyIndyCredentialFormatService(),
+                  new AnonCredsCredentialFormatService(),
+                ],
+              }),
+            ],
+          }),
         },
         dependencies: agentDependencies,
       });
@@ -78,12 +97,12 @@ export class BobService {
       agent.registerOutboundTransport(new WsOutboundTransport());
       agent.registerOutboundTransport(new HttpOutboundTransport());
       agent.registerInboundTransport(new HttpInboundTransport({ port: 3003 }));
-
       await agent.initialize();
+
       this.setAgent(agent);
       return {
         statusCode: HttpStatus.OK,
-        message: 'User created successfully',
+        message: 'Bob agent initialized successfully',
         data: agent,
       };
     } catch (error) {

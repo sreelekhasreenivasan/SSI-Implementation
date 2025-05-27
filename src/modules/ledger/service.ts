@@ -8,10 +8,10 @@ import {
   InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
-import { AcmeService } from '../acme-agent/service';
 import { Agent, KeyType, TypedArrayEncoder } from '@credo-ts/core';
 import axios from 'axios';
 import { credDto } from './dto/ledger.dto';
+import { AcmeService } from '../acme-agent/service';
 
 @Injectable()
 export class LedgerService {
@@ -24,15 +24,15 @@ export class LedgerService {
         agent,
         'indy',
         'bcovrin:testnet',
-        'LzngHeRZXpL8bJCLRAKeBN',
-        '3e7a4c8b1234e6d781c9a34b7f5e2c0s',
+        'DeXLx9W5uGeg1mbQCQjTEk',
+        '3e7a4c8b1234e6d781c9a34b7f5e2c3a',
       );
       const schemaResult = await agent.modules.anoncreds.registerSchema({
         schema: {
-          attrNames: ['Name', 'Age', 'City', 'Blood Group'],
-          issuerId: 'did:indy:bcovrin:testnet:LzngHeRZXpL8bJCLRAKeBN',
+          attrNames: ['name', 'age', 'city', 'blood_group'],
+          issuerId: 'did:indy:bcovrin:testnet:DeXLx9W5uGeg1mbQCQjTEk',
           name: 'Student ID Card V1',
-          version: '1.0.0',
+          version: '1.0.1',
         },
         options: {},
       });
@@ -49,11 +49,11 @@ export class LedgerService {
         data: schemaResult,
       };
     } catch (error) {
-      console.error('Error creating invitation:', error);
+      console.error('Error redistering schema:', error);
       if (error instanceof NotFoundException) {
         throw error;
       }
-      throw new InternalServerErrorException('Failed to create invitation');
+      throw new InternalServerErrorException('Failed to register schema');
     }
   }
   private async didRegisteration(

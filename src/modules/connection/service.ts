@@ -8,8 +8,8 @@ import {
   InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
-import { AcmeService } from '../acme-agent/service';
 import { BobService } from '../bob-agent/service';
+import { AcmeService } from '../acme-agent/service';
 
 @Injectable()
 export class ConnectionService {
@@ -41,6 +41,7 @@ export class ConnectionService {
       throw new InternalServerErrorException('Failed to create invitation');
     }
   }
+
   async receiveInvitation(invitationUrl: string) {
     try {
       const agent = this.bobService.getAgent();
@@ -51,10 +52,22 @@ export class ConnectionService {
         throw new BadRequestException('Invalid invitation URL');
       }
       const { outOfBandRecord } = await agent.oob.receiveInvitation(invitation);
+      const oobId = outOfBandRecord.id;
+      const connections = await agent.connections.getAll();
+      connections.forEach((conn) => {
+        console.log({
+          id: conn.id,
+          state: conn.state,
+          theirLabel: conn.theirLabel,
+          theidDid: conn.theirDid,
+        });
+      });
+
       return {
         statusCode: HttpStatus.ACCEPTED,
         message: 'Invitation accepted succcessfully',
         data: outOfBandRecord,
+        oobid: oobId,
       };
     } catch (error) {
       console.error('Error receiving invitation:', error);
@@ -68,7 +81,7 @@ export class ConnectionService {
     }
   }
 
-  async getConnectionId(oobId: string) {
+  async getConnectionIdofAcme(oobId: string) {
     try {
       const agent = this.acmeService.getAgent();
 
@@ -85,6 +98,39 @@ export class ConnectionService {
       return {
         statusCode: HttpStatus.OK,
         message: 'Connection ID for acme agent return sucessfully',
+        connectionId: connectedConnection.id,
+      };
+    } catch (error) {
+      console.error('Erro in returning the ID.', error);
+      if (error instanceof NotFoundException) {
+        throw error;
+      }
+      if (error instanceof BadRequestException) {
+        throw error;
+      }
+      throw new InternalServerErrorException(
+        'Failed to return the Connection ID',
+      );
+    }
+  }
+
+  async getConnectionIdofBob(oobId: string) {
+    try {
+      const agent = this.bobService.getAgent();
+
+      const connections = await agent.connections.findAllByOutOfBandId(oobId);
+      if (!connections.length) {
+        throw new BadRequestException(
+          `No connection found for out-of-band ID: ${oobId}`,
+        );
+      }
+      const connectedConnection = await agent.connections.returnWhenIsConnected(
+        connections[0].id,
+      );
+
+      return {
+        statusCode: HttpStatus.OK,
+        message: 'Connection ID for bob agent return sucessfully',
         connectionId: connectedConnection.id,
       };
     } catch (error) {
